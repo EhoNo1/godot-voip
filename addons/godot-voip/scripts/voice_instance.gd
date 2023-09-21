@@ -19,7 +19,7 @@ var _prev_frame_recording = false
 func _process(delta: float) -> void:
 	if _playback != null:
 		_process_voice()
-
+ 
 	_process_mic()
 
 func _create_mic():
@@ -49,7 +49,7 @@ func _create_voice():
 	_playback = _voice.get_stream_playback()
 	_voice.play()
 
-@rpc("any_peer") func _speak(sample_data: PackedFloat32Array, id: int):
+@rpc("any_peer","unreliable") func _speak(sample_data: PackedFloat32Array, id: int):
 	if _playback == null:
 		_create_voice()
 
@@ -63,7 +63,7 @@ func _process_voice():
 
 	for i in range(min(_playback.get_frames_available(), _receive_buffer.size())):
 		_playback.push_frame(Vector2(_receive_buffer[0], _receive_buffer[0]))
-		_receive_buffer.remove(0)
+		_receive_buffer.remove_at(0)
 
 func _process_mic():
 	if recording:
@@ -90,7 +90,7 @@ func _process_mic():
 			if listen:
 				_speak(data, get_tree().get_unique_id())
 
-			rpc_unreliable("_speak", data,  get_tree().get_unique_id())
+			rpc("_speak", data,  get_tree().get_unique_id())
 			emit_signal("sent_voice_data", data)
 
 	_prev_frame_recording = recording
