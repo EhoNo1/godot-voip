@@ -6,29 +6,29 @@ signal sent_voice_data
 signal created_instance
 signal removed_instance
 
-export var recording: bool = false setget _set_recording
-export var listen: bool = false setget _set_listen
-export(float, 0.0, 1.0) var input_threshold: = 0.005 setget _set_input_threshold
+@export var recording: bool = false: set = _set_recording
+@export var listen: bool = false: set = _set_listen
+@export var input_threshold: = 0.005: set = _set_input_threshold
 
 enum TypeVoiceInstance {NATIVE, GDSCRIPT}
-export(TypeVoiceInstance) var type_voice_instance
+@export var type_voice_instance: TypeVoiceInstance
 
 var instances := {}
 var _id = null
 
 func _ready() -> void:
-	get_tree().connect("connected_to_server", self, "_connected_ok")
-	get_tree().connect("server_disconnected", self, "_server_disconnected")
-	get_tree().connect("connection_failed", self, "_server_disconnected")
+	get_tree().connect("connected_to_server", Callable(self, "_connected_ok"))
+	get_tree().connect("server_disconnected", Callable(self, "_server_disconnected"))
+	get_tree().connect("connection_failed", Callable(self, "_server_disconnected"))
 
-	get_tree().connect("network_peer_connected", self, "_player_connected")
-	get_tree().connect("network_peer_disconnected", self, "_player_disconnected")
+	get_tree().connect("peer_connected", Callable(self, "_player_connected"))
+	get_tree().connect("peer_disconnected", Callable(self, "_player_disconnected"))
 
 func _physics_process(delta: float) -> void:
-	if get_tree().has_network_peer() && get_tree().is_network_server() && _id == null:
-		_create_instance(get_tree().get_network_unique_id())
+	if get_tree().has_multiplayer_peer() && get_tree().is_server() && _id == null:
+		_create_instance(get_tree().get_unique_id())
 
-	if (!get_tree().has_network_peer() || !get_tree().is_network_server()) && _id == 1:
+	if (!get_tree().has_multiplayer_peer() || !get_tree().is_server()) && _id == 1:
 		_reset()
 
 func _create_instance(id: int) -> void:
@@ -38,16 +38,16 @@ func _create_instance(id: int) -> void:
 	elif type_voice_instance == TypeVoiceInstance.GDSCRIPT:
 		instance = VoiceInstance.new()
 
-	if id == get_tree().get_network_unique_id():
+	if id == get_tree().get_unique_id():
 		instance.recording = recording
 		instance.listen = listen
 		instance.input_threshold = input_threshold
 
-		instance.connect("sent_voice_data", self, "_sent_voice_data")
+		instance.connect("sent_voice_data", Callable(self, "_sent_voice_data"))
 
 		_id = id
 
-	instance.connect("received_voice_data", self, "_received_voice_data")
+	instance.connect("received_voice_data", Callable(self, "_received_voice_data"))
 
 	instance.name = str(id)
 
@@ -92,10 +92,10 @@ func _set_input_threshold(value: float) -> void:
 	input_threshold = value
 
 func _connected_ok() -> void:
-	if (!get_tree().has_network_peer() || !get_tree().is_network_server()) && _id == 1:
+	if (!get_tree().has_multiplayer_peer() || !get_tree().is_server()) && _id == 1:
 		_reset()
 
-	_create_instance(get_tree().get_network_unique_id())
+	_create_instance(get_tree().get_unique_id())
 
 func _server_disconnected() -> void:
 	_reset()
@@ -106,8 +106,8 @@ func _player_connected(id) -> void:
 func _player_disconnected(id) -> void:
 	_remove_instance(id)
 
-func _received_voice_data(data: PoolRealArray, id: int) -> void:
+func _received_voice_data(data: PackedFloat32Array, id: int) -> void:
 	emit_signal("received_voice_data", data, id)
 
-func _sent_voice_data(data: PoolRealArray) -> void:
+func _sent_voice_data(data: PackedFloat32Array) -> void:
 	emit_signal("sent_voice_data", data)

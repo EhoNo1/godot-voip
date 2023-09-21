@@ -4,16 +4,16 @@ class_name VoiceInstance
 signal received_voice_data
 signal sent_voice_data
 
-export var custom_voice_audio_stream_player: NodePath
-export var recording: bool = false
-export var listen: bool = false
-export(float, 0.0, 1.0) var input_threshold: = 0.005
+@export var custom_voice_audio_stream_player: NodePath
+@export var recording: bool = false
+@export var listen: bool = false
+@export var input_threshold: = 0.005 # (float, 0.0, 1.0)
 
 var _mic: VoiceMic
 var _voice
 var _effect_capture: AudioEffectCapture
 var _playback: AudioStreamGeneratorPlayback
-var _receive_buffer := PoolRealArray()
+var _receive_buffer := PackedFloat32Array()
 var _prev_frame_recording = false
 
 func _process(delta: float) -> void:
@@ -49,7 +49,7 @@ func _create_voice():
 	_playback = _voice.get_stream_playback()
 	_voice.play()
 
-remote func _speak(sample_data: PoolRealArray, id: int):
+@rpc("any_peer") func _speak(sample_data: PackedFloat32Array, id: int):
 	if _playback == null:
 		_create_voice()
 
@@ -73,10 +73,10 @@ func _process_mic():
 		if _prev_frame_recording == false:
 			_effect_capture.clear_buffer()
 
-		var stereo_data: PoolVector2Array = _effect_capture.get_buffer(_effect_capture.get_frames_available())
+		var stereo_data: PackedVector2Array = _effect_capture.get_buffer(_effect_capture.get_frames_available())
 		if stereo_data.size() > 0:
 
-			var data = PoolRealArray()
+			var data = PackedFloat32Array()
 			data.resize(stereo_data.size())
 
 			var max_value := 0.0
@@ -88,9 +88,9 @@ func _process_mic():
 				return
 
 			if listen:
-				_speak(data, get_tree().get_network_unique_id())
+				_speak(data, get_tree().get_unique_id())
 
-			rpc_unreliable("_speak", data,  get_tree().get_network_unique_id())
+			rpc_unreliable("_speak", data,  get_tree().get_unique_id())
 			emit_signal("sent_voice_data", data)
 
 	_prev_frame_recording = recording
