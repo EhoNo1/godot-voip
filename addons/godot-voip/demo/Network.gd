@@ -3,6 +3,7 @@ class_name Network
 
 var server_port := 3000
 var server_ip := "127.0.0.1"
+#var multiplayer : MultiplayerAPI
 
 #enum ClientType {ENET, WEBSOCKET}
 #@export var client_type: ClientType
@@ -15,7 +16,7 @@ func start_client() -> int:
 	if err != OK:
 		return err
 
-	get_tree().set_multiplayer_peer(peer)
+	multiplayer.set_multiplayer_peer(peer)
 
 	return OK
 	#elif client_type == ClientType.WEBSOCKET:
@@ -39,7 +40,7 @@ func start_server() -> int:
 	if err != OK:
 		return err
 
-	get_tree().get_multiplayer().set_multiplayer_peer(peer)
+	multiplayer.set_multiplayer_peer(peer)
 
 	return OK
 	#elif client_type == ClientType.WEBSOCKET:
@@ -56,12 +57,11 @@ func start_server() -> int:
 	return FAILED
 
 func stop() -> void:
-	if get_tree().get_multiplayer().network_peer != null:
+	if multiplayer.multiplayer_peer != null:
 		#if get_tree().network_peer is WebSocketClient:
 		#	get_tree().network_peer.disconnect_from_host()
 		#elif get_tree().network_peer is WebSocketServer:
 		#	get_tree().network_peer.stop()
-		if get_tree().get_multiplayer().network_peer is ENetMultiplayerPeer:
-			get_tree().get_multiplayer().network_peer.close_connection()
-		get_tree().get_multiplayer().set_multiplayer_peer(null)
-
+		if multiplayer.multiplayer_peer is ENetMultiplayerPeer:
+			multiplayer.multiplayer_peer.close()
+		#multiplayer.set_multiplayer_peer(null)

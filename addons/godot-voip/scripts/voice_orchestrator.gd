@@ -17,18 +17,18 @@ var instances := {}
 var _id = null
 
 func _ready() -> void:
-	get_tree().get_multiplayer().connect("connected_to_server", Callable(self, "_connected_ok"))
-	get_tree().get_multiplayer().connect("server_disconnected", Callable(self, "_server_disconnected"))
-	get_tree().get_multiplayer().connect("connection_failed", Callable(self, "_server_disconnected"))
+	multiplayer.connect("connected_to_server", Callable(self, "_connected_ok"))
+	multiplayer.connect("server_disconnected", Callable(self, "_server_disconnected"))
+	multiplayer.connect("connection_failed", Callable(self, "_server_disconnected"))
 
-	get_tree().get_multiplayer().connect("peer_connected", Callable(self, "_player_connected"))
-	get_tree().get_multiplayer().connect("peer_disconnected", Callable(self, "_player_disconnected"))
+	multiplayer.connect("peer_connected", Callable(self, "_player_connected"))
+	multiplayer.connect("peer_disconnected", Callable(self, "_player_disconnected"))
 
 func _physics_process(delta: float) -> void:
-	if get_tree().get_multiplayer().has_multiplayer_peer() && get_tree().get_multiplayer().is_server() && _id == null:
-		_create_instance(get_tree().get_multiplayer().get_unique_id())
+	if multiplayer.has_multiplayer_peer() && multiplayer.is_server() && _id == null:
+		_create_instance(multiplayer.get_unique_id())
 
-	if (!get_tree().get_multiplayer().has_multiplayer_peer() || !get_tree().get_multiplayer().is_server()) && _id == 1:
+	if (!multiplayer.has_multiplayer_peer() || !multiplayer.is_server()) && _id == 1:
 		_reset()
 
 func _create_instance(id: int) -> void:
@@ -39,7 +39,7 @@ func _create_instance(id: int) -> void:
 	#	instance = VoiceInstance.new()
 	instance = VoiceInstance.new()
 
-	if id == get_tree().get_multiplayer().get_unique_id():
+	if id == multiplayer.get_unique_id():
 		instance.recording = recording
 		instance.listen = listen
 		instance.input_threshold = input_threshold
@@ -93,10 +93,10 @@ func _set_input_threshold(value: float) -> void:
 	input_threshold = value
 
 func _connected_ok() -> void:
-	if (!get_tree().has_multiplayer_peer() || !get_tree().is_server()) && _id == 1:
+	if (!multiplayer.has_multiplayer_peer() || !multiplayer.is_server()) && _id == 1:
 		_reset()
 
-	_create_instance(get_tree().get_unique_id())
+	_create_instance(multiplayer.get_unique_id())
 
 func _server_disconnected() -> void:
 	_reset()
