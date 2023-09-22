@@ -25,29 +25,29 @@ func _ready() -> void:
 	voice.connect("received_voice_data", Callable(self, "_received_voice_data"))
 	voice.connect("sent_voice_data", Callable(self, "_sent_voice_data"))
 
-	get_tree().connect("connected_to_server", Callable(self, "_connected_ok"))
-	get_tree().connect("server_disconnected", Callable(self, "_server_disconnected"))
-	get_tree().connect("connection_failed", Callable(self, "_connected_fail"))
+	get_tree().get_multiplayer().connect("connected_to_server", Callable(self, "_connected_ok"))
+	get_tree().get_multiplayer().connect("server_disconnected", Callable(self, "_server_disconnected"))
+	get_tree().get_multiplayer().connect("connection_failed", Callable(self, "_connected_fail"))
 
-	get_tree().connect("peer_connected", Callable(self, "_player_connected"))
-	get_tree().connect("peer_disconnected", Callable(self, "_player_disconnected"))
+	get_tree().get_multiplayer().connect("peer_connected", Callable(self, "_player_connected"))
+	get_tree().get_multiplayer().connect("peer_disconnected", Callable(self, "_player_disconnected"))
 
 	if voice.recording:
 		checkBoxToggle.button_pressed = true
 		buttonVoice.button_pressed = true
 
-	for i in network.ClientType.values():
-		var type_name: String = network.ClientType.keys()[i]
-		type_name = type_name.substr(0, 1) + type_name.substr(1).to_lower()
-		optionButtonServerType.add_item(type_name, i)
+	#for i in network.ClientType.values():
+	#	var type_name: String = network.ClientType.keys()[i]
+	#	type_name = type_name.substr(0, 1) + type_name.substr(1).to_lower()
+	#	optionButtonServerType.add_item(type_name, i)
 
-	for i in voice.TypeVoiceInstance.values():
-		var type_name: String = voice.TypeVoiceInstance.keys()[i]
-		type_name = type_name.substr(0, 1) + type_name.substr(1).to_lower()
-		optionButtonVoiceType.add_item(type_name, i)
+	#for i in voice.TypeVoiceInstance.values():
+	#	var type_name: String = voice.TypeVoiceInstance.keys()[i]
+	#	type_name = type_name.substr(0, 1) + type_name.substr(1).to_lower()
+	#	optionButtonVoiceType.add_item(type_name, i)
 
-	optionButtonServerType.selected = network.client_type
-	optionButtonVoiceType.selected = voice.type_voice_instance
+	#optionButtonServerType.selected = network.client_type
+	#optionButtonVoiceType.selected = voice.type_voice_instance
 	spinBoxHostPort.value = network.server_port
 	lineEditClientIp.text = network.server_ip
 	spinBoxClientPort.value = network.server_port

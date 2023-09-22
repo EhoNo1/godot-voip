@@ -10,35 +10,36 @@ signal removed_instance
 @export var listen: bool = false: set = _set_listen
 @export var input_threshold: = 0.005: set = _set_input_threshold
 
-enum TypeVoiceInstance {NATIVE, GDSCRIPT}
-@export var type_voice_instance: TypeVoiceInstance
+#enum TypeVoiceInstance {NATIVE, GDSCRIPT}
+#@export var type_voice_instance: TypeVoiceInstance
 
 var instances := {}
 var _id = null
 
 func _ready() -> void:
-	get_tree().connect("connected_to_server", Callable(self, "_connected_ok"))
-	get_tree().connect("server_disconnected", Callable(self, "_server_disconnected"))
-	get_tree().connect("connection_failed", Callable(self, "_server_disconnected"))
+	get_tree().get_multiplayer().connect("connected_to_server", Callable(self, "_connected_ok"))
+	get_tree().get_multiplayer().connect("server_disconnected", Callable(self, "_server_disconnected"))
+	get_tree().get_multiplayer().connect("connection_failed", Callable(self, "_server_disconnected"))
 
-	get_tree().connect("peer_connected", Callable(self, "_player_connected"))
-	get_tree().connect("peer_disconnected", Callable(self, "_player_disconnected"))
+	get_tree().get_multiplayer().connect("peer_connected", Callable(self, "_player_connected"))
+	get_tree().get_multiplayer().connect("peer_disconnected", Callable(self, "_player_disconnected"))
 
 func _physics_process(delta: float) -> void:
-	if get_tree().has_multiplayer_peer() && get_tree().is_server() && _id == null:
-		_create_instance(get_tree().get_unique_id())
+	if get_tree().get_multiplayer().has_multiplayer_peer() && get_tree().get_multiplayer().is_server() && _id == null:
+		_create_instance(get_tree().get_multiplayer().get_unique_id())
 
-	if (!get_tree().has_multiplayer_peer() || !get_tree().is_server()) && _id == 1:
+	if (!get_tree().get_multiplayer().has_multiplayer_peer() || !get_tree().get_multiplayer().is_server()) && _id == 1:
 		_reset()
 
 func _create_instance(id: int) -> void:
 	var instance
-	if type_voice_instance == TypeVoiceInstance.NATIVE:
-		instance = NativeVoiceInstance.new()
-	elif type_voice_instance == TypeVoiceInstance.GDSCRIPT:
-		instance = VoiceInstance.new()
+	#if type_voice_instance == TypeVoiceInstance.NATIVE:
+	#	instance = NativeVoiceInstance.new()
+	#elif type_voice_instance == TypeVoiceInstance.GDSCRIPT:
+	#	instance = VoiceInstance.new()
+	instance = VoiceInstance.new()
 
-	if id == get_tree().get_unique_id():
+	if id == get_tree().get_multiplayer().get_unique_id():
 		instance.recording = recording
 		instance.listen = listen
 		instance.input_threshold = input_threshold
